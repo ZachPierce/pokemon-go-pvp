@@ -3,7 +3,6 @@ import React from 'react';
 
 import AppInfo from './components/AppInfo';
 import PokemonInfo from './components/PokemonInfo'
-import { type } from '@testing-library/user-event/dist/type';
 
 class App extends React.Component {
   
@@ -118,7 +117,12 @@ class App extends React.Component {
     return (
       <div className="App">
         <AppInfo />
-        <PokemonInfo />
+        {Object.keys(this.state.completePokeInfo).map( pokemon => {
+          return (
+            <PokemonInfo name={pokemon} {...this.state.completePokeInfo[pokemon]}/>
+          )
+        })}
+        
       </div>
     )
 

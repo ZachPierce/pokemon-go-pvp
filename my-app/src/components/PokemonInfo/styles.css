@@ -1,0 +1,25 @@
+.pokemon-info-card-container {
+    .card {
+        
+        padding: 10px;
+        background-color: #d9edf8;
+        border-radius: 6px;
+        box-shadow: 2px 2px;
+        font-size: 10pt;
+        
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card-bottom {
+            
+            .bottom-container {
+                display: flex;
+                .info-bubble {
+                    display: flex;
+                    
+                }
+            }
+        }
+    }
+}
