@@ -8,7 +8,7 @@ import { type } from '@testing-library/user-event/dist/type';
 class App extends React.Component {
   
   state = {
-    completePokemonInfo: {}
+    completePokeInfo: {}
   }
 
   componentDidMount() {
@@ -52,7 +52,8 @@ class App extends React.Component {
     for (let pokemon of pokemonNames) {
 
       let name = pokemon.pokemon_name
-
+      //we only want to look at normal, alolan and galarian pokemon. The data source we are dealing with
+      //has tiings like gofest and party hat and such that we don't need to worry about
       if (pokemon.form === "Alola" || pokemon.form === "Galarian" || pokemon.form === "Normal") {
 
         if (pokemon.form === "Alola") {
@@ -60,35 +61,60 @@ class App extends React.Component {
         } else if (pokemon.form === "Galarian") {
           name = "Galarian " + pokemon.pokemon_name
         } 
-        let data = {weakTo: "none", resistantTo: "all"}
-        if (name === "Whiscash") data = this.calculateWeaknessAndResistances(pokemon.type, pokemonTypes)
+        
+        //need to calcuulate the weaknesses and resistances
+        let data = this.calculateWeaknessAndResistances(pokemon.type, pokemonTypes)
 
+        //set our data once we have calculated it
         completePokeInfo[name] = {type: pokemon.type, weakness: data.weakTo, resistances: data.resistantTo}
       }
       
     }
-    //eventually we will set the state here 
-   // console.log("pokemonInfo", completePokeInfo)
+
+   this.setState( {completePokeInfo} )
   }
 
   calculateWeaknessAndResistances = (pokemonTypes, allTypes) => {
+    let typeEffectiveness = {}
     let weakTo = {}
     let resistantTo = {}
 
-    Object.keys(allTypes[pokemonTypes[0]]).forEach( currentValues => {
-      let nestedValue = allTypes[pokemonTypes[0]]
-      console.log("curent", currentValues, nestedValue[currentValues])
-    })
-    
-
-    for (let pokeType of pokemonTypes) {
-      console.log("current type", pokeType, "data at current", allTypes[pokeType])
+    //loop through the types of the pokemon that we are calculating, this can be either a single type or a double type
+    //ie ["water"] or ["ground", "water"]
+    for (let pokemonType of pokemonTypes) {
+      //ths first loop is for the key value pair of all the possible types
+      Object.keys(allTypes).forEach( allTypesKey => {
+        
+        //this next loop loops through the map of types that the parent type is either
+        //strong against or weak against
+        Object.keys(allTypes[allTypesKey]).forEach(typeDataKey => {
+          let typeDataValue = allTypes[allTypesKey]
+          let ourValue = typeDataValue[typeDataKey]
+          
+          //we only watnt to look at the values that are effecting our current pokemons type
+          if (typeDataKey === pokemonType) {
+            if (typeEffectiveness[allTypesKey]) {
+              typeEffectiveness[allTypesKey] = typeEffectiveness[allTypesKey] * ourValue
+            } else {
+              typeEffectiveness[allTypesKey] = ourValue
+            }
+          }
+        })
+      })
     }
+    
+    //final loop thorugh to calculate the overall weakness and resistance, this is primarily for double typed pokemon
+    //if there is a single type this doesn't do anything really
+    Object.keys(typeEffectiveness).forEach( pokeType => {
+      if (typeEffectiveness[pokeType] > 1) weakTo[pokeType] = typeEffectiveness[pokeType]
+      if (typeEffectiveness[pokeType] < 1) resistantTo[pokeType] = typeEffectiveness[pokeType]
+    })
     
     return {weakTo, resistantTo}
   }
 
   render() {
+    
     return (
       <div className="App">
         <AppInfo />
